@@ -1,5 +1,6 @@
 package hh.getData.guideline.AboutUs;
 
+import hh.getData.guideline.enumeration.Status;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -14,8 +15,10 @@ public class AboutUs {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private  long about_id;
 
-    @Column(name = "logo", nullable = false)
-    private String logo;
+
+    @Lob
+    @Column(length=1000,name = "logo", nullable = false)
+    byte[] logo;
 
     @Column(name = "about_app", nullable = false)
     private String about_app;
@@ -30,5 +33,17 @@ public class AboutUs {
     private String phone_number;
 
     @Column(name = "status", nullable = true)
-    private boolean status;
+    private Status status;
+
+    public static AboutUs from(AboutUsDto aboutUsDto){
+
+        AboutUs aboutUs = new AboutUs();
+        aboutUs.setAbout_app(aboutUsDto.getAbout_app());
+        aboutUs.setLogo(aboutUsDto.getLogo());
+        aboutUs.setEmail(aboutUsDto.getEmail());
+        aboutUs.setPhone_number(aboutUsDto.getPhone_number());
+        aboutUs.setOur_services(aboutUsDto.getOur_services());
+        aboutUs.setStatus(aboutUsDto.getStatus());
+        return aboutUs;
+    }
 }
