@@ -1,7 +1,12 @@
 package hh.getData.guideline.Donors;
 
 import hh.getData.guideline.Exception.EntityNotFoundException;
+import hh.getData.guideline.Exception.StatusAlreadyInactiveException;
+import hh.getData.guideline.Image.Image;
+import hh.getData.guideline.Image.ImageService;
+import hh.getData.guideline.Office.Office;
 import hh.getData.guideline.enumeration.Status;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -14,10 +19,11 @@ import java.util.Optional;
 public class DonorsServices {
     private final DonorsRepository donorsRepository;
 
+    private final ImageService imageService;
+
 
     public Donors createDonors(Donors newDonors){
-        log.info("saving new Donor information: {}", newDonors.getDonor_name());
-        newDonors.setStatus(Status.ACTIVE);
+        log.info("saving new Donor information: {}", newDonors.getDonorName());
         return donorsRepository.save(newDonors);
     }
 
@@ -26,24 +32,26 @@ public class DonorsServices {
         return donorsRepository.findAll();
     }
 
-    public Donors getById(Long id){
+    public Donors findById(Long id){
         log.info("Fetching by id: {}", id);
-        return donorsRepository.getById(id);
+        Optional<Donors> donors = donorsRepository.findById(id);
+        return donors.orElseThrow();
     }
 
     public Donors updateDonors(Long id,Donors donorsUpdate){
-        log.info("updating Donor information: {}", donorsUpdate.getDonor_name());
-
+        log.info("updating Donor information: {}", donorsUpdate.getDonorName());
         Optional<Donors> existingDonorsOptional = donorsRepository.findById(id);
 
         if (existingDonorsOptional.isPresent()) {
             Donors existingDonors = existingDonorsOptional.get();
-
             // Update attributes with new values
-            existingDonors.setDonor_name(donorsUpdate.getDonor_name());
-            existingDonors.setLogo(donorsUpdate.getLogo());
+            existingDonors.setDonorName(donorsUpdate.getDonorName());
+            //existingDonors.setLogo(donorsUpdate.getLogo());
             existingDonors.setAbout_donor(donorsUpdate.getAbout_donor());
-            // Update other attributes as needed
+            existingDonors.setFacebook_account(donorsUpdate.getFacebook_account());
+            existingDonors.setLinkedin_account(donorsUpdate.getLinkedin_account());
+            existingDonors.setEmail(donorsUpdate.getEmail());
+            existingDonors.setPhone_number(donorsUpdate.getPhone_number());
 
             // Save the updated entity
             return donorsRepository.save(existingDonors);
@@ -64,10 +72,28 @@ public class DonorsServices {
         Donors donors = donorsRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Donors with ID " + id + " not found"));
 
-        donors.setStatus(Status.INACTIVE);
+        if (donors.getStatus() != Status.INACTIVE) {
+            donors.setStatus(Status.INACTIVE);
+        } else {
+            throw new StatusAlreadyInactiveException("This Donor with ID " + id + " is already INACTIVE");
+        }
         donorsRepository.save(donors);
     }
 
+    public Donors getDonorByName(String donor_name) {
+        return donorsRepository.findByDonorName(donor_name);
+    }
 
+    public void deleteAllDonors(){
+        donorsRepository.deleteAll();
+    }
+
+    @Transactional
+    public Donors addImage(Long donorId, Long imageId){
+        Donors donors=findById(donorId);
+        Image image=imageService.getById(imageId);
+        donors.setImage(image);
+        return donors;
+    }
 
 }
