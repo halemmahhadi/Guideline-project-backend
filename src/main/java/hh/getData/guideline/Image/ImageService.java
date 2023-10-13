@@ -2,19 +2,28 @@ package hh.getData.guideline.Image;
 
 import hh.getData.guideline.Exception.EntityNotFoundException;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 
 @Service
+@RequiredArgsConstructor
+@Slf4j
 public class ImageService {
-    @Autowired
-    ImageRepository imageRepository;
+
+    private final ImageRepository imageRepository;
 
     public Image uploadImage(Image image){
         return imageRepository.save(image);
+    }
+
+    public List<Image> getAll(){
+        return imageRepository.findAll();
     }
 
     public Image getById(Long id)
@@ -40,5 +49,8 @@ public class ImageService {
         return imageToEdit;
     }
 
+    public void deleteAll(){
+        imageRepository.deleteAll();
+    }
 }
 
