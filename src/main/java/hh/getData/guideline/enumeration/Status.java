@@ -1,16 +1,19 @@
 package hh.getData.guideline.enumeration;
 
+import lombok.Getter;
+
+
 public enum Status {
-    ACTIVE("true"),
-    INACTIVE("false");
+    ACTIVE(1), INACTIVE(0);
 
-    private final String status;
+    private final int value;
 
-    Status(String status) {
-        this.status = status;
+    Status(int value) {
+        this.value = value;
     }
 
-    public String getStatus() {
-        return this.status;
+    public int getValue() {
+        return value;
     }
+
 }
