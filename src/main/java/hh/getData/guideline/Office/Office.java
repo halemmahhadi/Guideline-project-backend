@@ -1,19 +1,29 @@
 package hh.getData.guideline.Office;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import hh.getData.guideline.Licence.Licence;
+import hh.getData.guideline.WorkDomain.WorkDomain;
 import hh.getData.guideline.enumeration.Status;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Proxy;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@SequenceGenerator(name = "seq", initialValue = 1)
 public class Office {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq")
     private int id;
 
     @Column(name = "name", nullable = false)
@@ -49,8 +59,18 @@ public class Office {
     @Column(name = "phone_number", nullable = false)
     private String phone_number;
 
-    @Column(name = "status", nullable = false)
-    private Status status;
+    @Column(name = "status", nullable = false, columnDefinition = "int default 1")
+    @Enumerated(EnumType.ORDINAL)
+    private Status status  ;
+
+    @OneToMany(mappedBy = "office", fetch = FetchType.EAGER, cascade= {CascadeType.PERSIST,CascadeType.MERGE,CascadeType.DETACH})
+    @JsonIgnore
+    @JsonManagedReference
+    private List<Licence> licences = new ArrayList<>();
+
+    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL,mappedBy = "offices")
+    @JsonIgnore
+    private List<WorkDomain> workDomains = new ArrayList<>();
 
 
     public static Office from(OfficeDto officeDto) {
@@ -70,20 +90,18 @@ public class Office {
         return office;
     }
 
-    public static Office from(OfficeUpdateDto officeUpdateDto) {
-        Office office = new Office();
-        office.setName(officeUpdateDto.getName());
-        office.setDescription(officeUpdateDto.getDescription());
-        office.setAddress(officeUpdateDto.getAddress());
-        office.setRequired_actions(officeUpdateDto.getRequired_actions());
-        office.setNotes(officeUpdateDto.getNotes());
-        office.setLogo(officeUpdateDto.getLogo());
-        office.setWebsite_url(officeUpdateDto.getWebsite_url());
-        office.setFacebook_account(officeUpdateDto.getFacebook_account());
-        office.setLinkedin_account(officeUpdateDto.getLinkedin_account());
-        office.setEmail(officeUpdateDto.getEmail());
-        office.setPhone_number(officeUpdateDto.getPhone_number());
-        return office;
+    public void addLicenceToOffice(Licence licence){licences.add(licence);}
+
+    public void removeLicenceFromOffice(Licence licence){ licences.remove(licence); }
+
+    public void assignOfficeToWorkDomain(WorkDomain workDomain) {
+        workDomains.add(workDomain);
     }
+
+    public void removeOfficeFromWorkDomain(WorkDomain workDomain) {
+        workDomains.remove(workDomain);
+    }
+
+
 
 }

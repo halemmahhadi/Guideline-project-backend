@@ -1,5 +1,7 @@
 package hh.getData.guideline.AboutUs;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import hh.getData.guideline.Image.Image;
 import hh.getData.guideline.enumeration.Status;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -15,10 +17,10 @@ public class AboutUs {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private  long about_id;
 
-
-    @Lob
-    @Column(length=1000,name = "logo", nullable = false)
-    byte[] logo;
+    @OneToOne(fetch = FetchType.EAGER, cascade= {CascadeType.PERSIST,CascadeType.MERGE,CascadeType.DETACH})
+    @JoinColumn(name = "image_id", referencedColumnName = "id")
+    @JsonManagedReference
+    private Image image;
 
     @Column(name = "about_app", nullable = false)
     private String about_app;
@@ -32,14 +34,14 @@ public class AboutUs {
     @Column(name = "phone_number", nullable = false)
     private String phone_number;
 
-    @Column(name = "status", nullable = true)
+    @Column(name = "status")
     private Status status;
 
     public static AboutUs from(AboutUsDto aboutUsDto){
 
         AboutUs aboutUs = new AboutUs();
         aboutUs.setAbout_app(aboutUsDto.getAbout_app());
-        aboutUs.setLogo(aboutUsDto.getLogo());
+        aboutUs.setImage(aboutUsDto.getImage());
         aboutUs.setEmail(aboutUsDto.getEmail());
         aboutUs.setPhone_number(aboutUsDto.getPhone_number());
         aboutUs.setOur_services(aboutUsDto.getOur_services());

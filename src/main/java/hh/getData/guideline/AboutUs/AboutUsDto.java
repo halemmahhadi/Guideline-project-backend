@@ -1,7 +1,7 @@
 package hh.getData.guideline.AboutUs;
 
+import hh.getData.guideline.Image.Image;
 import hh.getData.guideline.enumeration.Status;
-import jakarta.persistence.Column;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -16,9 +16,7 @@ public class AboutUsDto {
     @NotNull
     private  long about_id;
 
-    @NotBlank
-    @NotNull
-    byte[] logo;
+    private Image image;
 
 
     private String about_app;
@@ -34,14 +32,14 @@ public class AboutUsDto {
     @NotNull
     private String phone_number;
 
-    private Status status;
+    private Status status = Status.ACTIVE;
 
 
     public static AboutUsDto from(AboutUs aboutUs){
         AboutUsDto aboutUsDto= new AboutUsDto();
         aboutUsDto.setAbout_id(aboutUs.getAbout_id());
         aboutUsDto.setAbout_app(aboutUs.getAbout_app());
-        aboutUsDto.setLogo(aboutUs.getLogo());
+        aboutUsDto.setImage(aboutUs.getImage());
         aboutUsDto.setEmail(aboutUs.getEmail());
         aboutUsDto.setPhone_number(aboutUs.getPhone_number());
         aboutUsDto.setOur_services(aboutUs.getOur_services());

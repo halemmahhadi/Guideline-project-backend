@@ -1,6 +1,7 @@
 package hh.getData.guideline.Donors;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import hh.getData.guideline.Image.Image;
 import hh.getData.guideline.enumeration.Status;
@@ -18,21 +19,32 @@ public class Donors {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private  long donor_id;
 
-    @Column(name = "donor_name", nullable = false)
-    private String donor_name;
+    @Column(name = "donorName", nullable = false)
+    private String donorName;
 
-
-
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "image_id", referencedColumnName = "id", nullable = false)
+    @OneToOne(fetch = FetchType.EAGER, cascade= {CascadeType.PERSIST,CascadeType.MERGE,CascadeType.DETACH})
+    @JoinColumn(name = "image_id", referencedColumnName = "id")
     @JsonManagedReference
-    private Image logo;
+    private Image image;
 
     @Column(name = "about_donor", nullable = false)
     private String about_donor;
 
-    @Column(name = "status", nullable = true)
-    private Status status ;
+    @Column(name = "facebook_account", nullable = true)
+    private String facebook_account;
+
+    @Column(name = "linkedin_account", nullable = true)
+    private String linkedin_account;
+
+    @Column(name = "email", nullable = true)
+    private String email;
+
+    @Column(name = "phone_number", nullable = false)
+    private String phone_number;
+
+    @Column(name = "status", nullable = false, columnDefinition = "int default 1")
+    @Enumerated(EnumType.ORDINAL)
+    private Status status  ;
 
 
 
@@ -40,17 +52,14 @@ public class Donors {
 
         Donors donors = new Donors();
         donors.setAbout_donor(donorsDto.getAbout_donor());
-        donors.setLogo(donorsDto.getLogo());
-        donors.setDonor_name(donorsDto.getDonor_name());
+        donors.setDonorName(donorsDto.getDonorName());
+        donors.setImage(donorsDto.getImage());
+        donors.setFacebook_account(donorsDto.getFacebook_account());
+        donors.setLinkedin_account(donorsDto.getLinkedin_account());
+        donors.setEmail(donorsDto.getEmail());
+        donors.setPhone_number(donorsDto.getPhone_number());
         donors.setStatus(donorsDto.getStatus());
         return donors;
     }
 
-    public static Donors from(DonorsUpdateDto donorsDto){
-        Donors donors = new Donors();
-        donors.setAbout_donor(donorsDto.getAbout_donor());
-        donors.setLogo(donorsDto.getLogo());
-        donors.setDonor_name(donorsDto.getDonor_name());
-        return donors;
-    }
 }
