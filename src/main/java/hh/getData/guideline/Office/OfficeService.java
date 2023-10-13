@@ -2,12 +2,21 @@ package hh.getData.guideline.Office;
 
 import hh.getData.guideline.Donors.Donors;
 import hh.getData.guideline.Exception.EntityNotFoundException;
+import hh.getData.guideline.Exception.StatusAlreadyInactiveException;
+import hh.getData.guideline.Licence.Licence;
+import hh.getData.guideline.Licence.LicenceIsAlreadyAssignmentException;
+import hh.getData.guideline.Licence.LicenceService;
+import hh.getData.guideline.WorkDomain.WorkDomain;
+import hh.getData.guideline.WorkDomain.WorkDomainRepository;
+import hh.getData.guideline.WorkDomain.WorkDomainService;
 import hh.getData.guideline.enumeration.Status;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -15,6 +24,9 @@ import java.util.Optional;
 @Slf4j
 public class OfficeService {
     private final OfficeRepository officeRepository;
+
+    private final LicenceService licenceService;
+
 
     public Office createOffice(Office newOffice) {
         log.info("Saving new office information: {}", newOffice.getName());
@@ -27,9 +39,11 @@ public class OfficeService {
         return officeRepository.findAll();
     }
 
-    public Optional<Office> getOfficeById(Long id) {
+
+    public Office getOfficeById(Long id) {
         log.info("Fetching office by ID: {}", id);
-        return officeRepository.findById(id);
+        Optional<Office> office = officeRepository.findById(id);
+        return office.orElseThrow();
     }
 
     public Office updateOffice(Long id, Office officeUpdate) {
@@ -70,14 +84,90 @@ public class OfficeService {
 
     public void softDeleteById(Long id) {
         Office office = officeRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Donors with ID " + id + " not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Office with ID " + id + " not found"));
+        if (office.getStatus() != Status.INACTIVE) {
+            office.setStatus(Status.INACTIVE);
+        } else {
+            throw new StatusAlreadyInactiveException("This Office with ID " + id + " is already INACTIVE");
+        }
 
-        office.setStatus(Status.INACTIVE);
         officeRepository.save(office);
     }
+
 
 
     public Office getOfficeByName(String office_name) {
         return officeRepository.findByName(office_name);
     }
+
+
+    @Transactional
+    public Office addLicenceToOffice(Long officeId, Long licenceId) {
+        Office office = getOfficeById(officeId);
+        Licence licence = licenceService.getLicenceById(licenceId);
+        if (Objects.nonNull(licence.getOffice())) {
+            throw new LicenceIsAlreadyAssignmentException(licenceId, (long) licence.getOffice().getId());
+        }
+        office.addLicenceToOffice(licence);
+        licence.setOffice(office);
+        return office;
+    }
+
+    @Transactional
+    public Office removeLicenceFromOffice(Long officeId, Long licenceId){
+        Office office = getOfficeById(officeId);
+        Licence licence = licenceService.getLicenceById(licenceId);
+        office.removeLicenceFromOffice(licence);
+        return office;
+    }
+
+
+    @Transactional
+    public Office editLicence(Long officeId, Long licenceId, Licence licence){
+        Office office = getOfficeById(officeId);
+        Licence licenceID =licenceService.getLicenceById(licenceId);
+        Licence licenceTo= licenceService.updateLicence((long) licenceID.getId(),licence);
+        licenceTo.setName(licence.getName());
+        licenceTo.setDescription(licence.getDescription());
+        licenceTo.setRequiredDocument(licence.getRequiredDocument());
+        licenceTo.setProcedures(licence.getProcedures());
+        licenceTo.setIssuingAuthority(licence.getIssuingAuthority());
+        licenceTo.setFees(licence.getFees());
+        licenceTo.setPenalties(licence.getPenalties());
+        licenceTo.setNotes(licence.getNotes());
+        return office;
+    }
+
+    public void deleteAllOffices(){
+        officeRepository.deleteAll();
+    }
+
+
+    /*public Office assignOfficeToWorkDomain(Long officeId, Long workDomainId){
+        Office office=getOfficeById(officeId);
+        WorkDomain workDomain=workDomainService.getWorkDomainById(workDomainId);
+        office.assignOfficeToWorkDomain(workDomain);
+        workDomainService.assignWorkDomainToOffice(workDomainId,officeId);
+        return  office;
+    }
+
+    public Office removeOfficeFromWorkDomain(Long officeId, Long workDomainId){
+        Office office=getOfficeById(officeId);
+        WorkDomain workDomain=workDomainService.getWorkDomainById(workDomainId);
+        office.removeOfficeFromWorkDomain(workDomain);
+        workDomainService.removeWorkDomainFromOffice(workDomainId,officeId);
+        return office;
+    }*/
+
+    /*public List<Office> findOfficesByWorkDomainId(Long workDomainId) {
+        if (!workDomainRepository.existsById(workDomainId)) {
+            throw new EntityNotFoundException("Not found WorkDomain with id = " + workDomainId);
+        }
+        return officeRepository.findOfficesByWorkDomains(workDomainId);
+    }*/
+
+
+
+
+
 }

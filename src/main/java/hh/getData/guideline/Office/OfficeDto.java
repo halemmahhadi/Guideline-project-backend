@@ -1,9 +1,17 @@
 package hh.getData.guideline.Office;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import hh.getData.guideline.Licence.LicenceDto;
+import hh.getData.guideline.WorkDomain.WorkDomain;
+import hh.getData.guideline.WorkDomain.WorkDomainDto;
 import hh.getData.guideline.enumeration.Status;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -18,6 +26,8 @@ public class OfficeDto {
     @NotNull
     private String name;
 
+    @NotBlank
+    @NotNull
     private String description;
 
     @NotBlank
@@ -38,9 +48,16 @@ public class OfficeDto {
 
     private String email;
 
+    @NotBlank
+    @NotNull
     private String phone_number;
 
-    private Status status;
+    private Status status = Status.ACTIVE ;
+
+    @JsonIgnore
+    private List<LicenceDto> licenceDto = new ArrayList<>();
+
+    private List<WorkDomain> workDomainDto = new ArrayList<>();
 
     public static OfficeDto from(Office office) {
         OfficeDto officeDto = new OfficeDto();
@@ -57,6 +74,8 @@ public class OfficeDto {
         officeDto.setEmail(office.getEmail());
         officeDto.setPhone_number(office.getPhone_number());
         officeDto.setStatus(office.getStatus());
+        officeDto.setLicenceDto(office.getLicences().stream().map(LicenceDto::from).collect(Collectors.toList()));
+        officeDto.setWorkDomainDto(office.getWorkDomains().stream().collect(Collectors.toList()));
         return officeDto;
     }
 
