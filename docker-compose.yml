@@ -1,0 +1,15 @@
+version: '3'
+services:
+  spring-app:
+    build:
+      context: .  # Use the current directory as the build context
+    ports:
+      - "8080:8080"
+
+  mysql:
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: guideline
+    ports:
+      - "3307:3306"
